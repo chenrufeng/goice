@@ -97,7 +97,7 @@ type session struct {
 
 	isNominating bool /* Nominating stage   */
 	//write this chan to finish one check.
-	checkMap map[string]chan error
+	checkMap map[string]chan error // KEY由addr+remoteAddr组成
 	//todo refer state, etc.
 	iceStreamTransport *StreamTransport
 	/*
@@ -199,25 +199,25 @@ ice session运行着四种协程
 */
 func newIceSession(name string, role SessionRole, localCandidates []*Candidate, transporter stunTranporter, ice *StreamTransport) *session {
 	s := &session{
-		Name:               name,
-		role:               role,
-		aggresive:          true,
-		rxUserFrag:         utils.RandomString(8),
-		rxPassword:         utils.RandomString(8),
-		localCandidates:    localCandidates,
-		transporter:        transporter,
-		checkMap:           make(map[string]chan error),
-		iceStreamTransport: ice,
-		checkList:          new(sessionCheckList),
-		validCheckList:     new(sessionCheckList),
-		tieBreaker:         attr.RandUint64(),
-		serverSocks:        make(map[string]serverSocker),
-		msg2Check:          make(map[stun.TransactionID]*sessionCheck),
-		msgChan:            make(chan *stunMessageWrapper, 10),
-		dataChan:           make(chan *stunDataWrapper, 10),
-		quitChan:           make(chan struct{}),
-		tryFailChan:        make(chan *checkFailedWrapper, 10),
-		log:                log.New("name", fmt.Sprintf("%s-icesession", name)),
+		Name:                               name,
+		role:                               role,
+		aggresive:                          true,
+		rxUserFrag:                         utils.RandomString(8),
+		rxPassword:                         utils.RandomString(8),
+		localCandidates:                    localCandidates,
+		transporter:                        transporter,
+		checkMap:                           make(map[string]chan error),
+		iceStreamTransport:                 ice,
+		checkList:                          new(sessionCheckList),
+		validCheckList:                     new(sessionCheckList),
+		tieBreaker:                         attr.RandUint64(),
+		serverSocks:                        make(map[string]serverSocker),
+		msg2Check:                          make(map[stun.TransactionID]*sessionCheck),
+		msgChan:                            make(chan *stunMessageWrapper, 10),
+		dataChan:                           make(chan *stunDataWrapper, 10),
+		quitChan:                           make(chan struct{}),
+		tryFailChan:                        make(chan *checkFailedWrapper, 10),
+		log:                                log.New("name", fmt.Sprintf("%s-icesession", name)),
 		controlledAgentWaitNomiatedTimeout: time.Second * 10,
 	}
 	s.rxCrendientials = stun.NewShortTermIntegrity(s.rxPassword)
@@ -893,11 +893,13 @@ func (s *session) changeCheckState(check *sessionCheck, newState SessionCheckSta
 func (s *session) allcheck(checks []*sessionCheck) {
 	const checkInterval = time.Millisecond * 20
 	fmap := make(map[int]bool)
+	fmt.Println("allcheck:", checks)
 	for _, c := range checks {
 		key := fmt.Sprintf("%s-%s", c.localCandidate.addr, c.remoteCandidate.addr)
 		ch := make(chan error, 1)
 		s.checkMap[key] = ch
 	}
+	fmt.Println("checkMap", s.checkMap)
 	/*
 		only one compondent, all waiting...
 	*/

@@ -89,7 +89,7 @@ func (s *sessionCheck) String() string {
 }
 
 type sessionCheckList struct {
-	checks []*sessionCheck
+	checks []*sessionCheck // 所有candidate组合
 }
 
 func (sc *sessionCheckList) String() string {

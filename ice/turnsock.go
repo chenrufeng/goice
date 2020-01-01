@@ -6,9 +6,9 @@ import (
 
 	"errors"
 
-	"github.com/nkbai/log"
 	"github.com/nkbai/goice/stun"
 	"github.com/nkbai/goice/turn"
+	"github.com/nkbai/log"
 )
 
 /*
@@ -27,6 +27,10 @@ type turnSock struct {
 	mapAddress   string
 	relayAddress string
 	serverAddr   string
+}
+
+func NewTurnSock(serverAddr, user, password string) (t *turnSock, err error) {
+	return newTurnSock(serverAddr, user, password)
 }
 
 func newTurnSock(serverAddr, user, password string) (t *turnSock, err error) {

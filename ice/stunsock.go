@@ -7,8 +7,9 @@ import (
 
 	"fmt"
 
-	"github.com/nkbai/log"
+	"github.com/libp2p/go-reuseport"
 	"github.com/nkbai/goice/stun"
+	"github.com/nkbai/log"
 )
 
 const defaultReadDeadLine = time.Second * 10
@@ -25,6 +26,10 @@ type stunSocket struct {
 	localAddrs   []string //for listen
 }
 
+func NewStunSocket(serverAddr string) (s *stunSocket, err error) {
+	return newStunSocket(serverAddr)
+}
+
 func newStunSocket(serverAddr string) (s *stunSocket, err error) {
 	s = &stunSocket{
 		ServerAddr:   serverAddr,
@@ -34,6 +39,23 @@ func newStunSocket(serverAddr string) (s *stunSocket, err error) {
 	if err != nil {
 		log.Crit(fmt.Sprintf("failed to dial:%s", err))
 	}
+	client, err := stun.NewClient(stun.ClientOptions{
+		Connection: conn,
+	})
+	if err != nil {
+		return
+	}
+	s.Client = client
+	s.LocalAddr = conn.(*net.UDPConn).LocalAddr().String()
+	return
+}
+
+func (s *stunSocket) ReuseDial(localAddr, serverAddr string) (err error) {
+	conn, err := reuseport.Dial("udp", localAddr, serverAddr)
+	if err != nil {
+		log.Crit(fmt.Sprintf("ReuseDial failed to dial:%s", err))
+	}
+	s.Close()
 	client, err := stun.NewClient(stun.ClientOptions{
 		Connection: conn,
 	})
