@@ -49,7 +49,7 @@ func setupIcePair(typ int) (s1, s2 *ice.StreamTransport, err error) {
 	case typStun:
 		cfg = ice.NewTransportConfigWithStun("39.108.81.146:4777")
 	case typTurn:
-		cfg = ice.NewTransportConfigWithTurn("39.108.81.146:4777", "bai", "bai")
+		// cfg = ice.NewTransportConfigWithTurn("39.108.81.146:4777", "bai", "bai")
 	}
 	s1, err = ice.NewIceStreamTransport(cfg, "s1")
 	if err != nil {

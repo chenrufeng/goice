@@ -30,29 +30,25 @@ type serverSocker interface {
 	*/
 	sendStunMessageSync(msg *stun.Message, fromaddr, toaddr string) (res *stun.Message, err error)
 	/*
-		暂时没用,先留着
-	*/
-	sendStunMessageWithResult(msg *stun.Message, fromaddr, toaddr string) (key stun.TransactionID, ch chan *serverSockResponse, err error)
-	/*
-		参数含义和 sync 是一致的,不用等待结果.
+		参数含义和 syc 是一致的,不用等待结果.
 	*/
 	sendStunMessageAsync(msg *stun.Message, fromaddr, toaddr string) error
 	/*
 		从 from 到 to 发送一个数据包,
-		如果 from 是本机地址,则直接发送,
+		如 from 是本机地址,则直接发送,
 		如果是 turn server relay address, 那么需要经由 turn server 中转.
-		也就是会把 data 封装到 SendIndication 或者 ChannelDataRequest中
+		也是会把 data 封装到 SendIndication 或者 ChannelDataRequest中
 	*/
-	sendData(data []byte, fromaddr, toaddr string) error
+	sendData(data []byte,fromaddr, toaddr string) error
 	/*
 		关闭连接
 	*/
 	Close()
 	/*
-		ice check 真正完毕以后,
-		需要开启刷新权限以及 keep alive 等操作.
-		todo 这里的 mode 定义并不清晰,需要梳理.
+		ice heck 真正完毕以后,
+		需开启刷新权限以及 keep alive 等操作.
+		todo 这的 mode 定义并不清晰,需要梳理.
 	*/
-	FinishNegotiation(mode serverSockMode)
+	FinishNegotiation(ode serverSockMode)
 	//StartRefresh()
 }

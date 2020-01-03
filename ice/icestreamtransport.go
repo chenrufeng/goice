@@ -9,8 +9,8 @@ import (
 
 	"errors"
 
-	"github.com/nkbai/log"
 	"github.com/nkbai/goice/sdp"
+	"github.com/nkbai/log"
 )
 
 //StreamTransportCallbacker callback of ICE
@@ -31,11 +31,11 @@ type StreamTransportCallbacker interface {
 TransportConfig is configuration of ICE
 */
 type TransportConfig struct {
-	Server          string
-	StunSever       string //maybe empty
-	TurnSever       string //maybe empty
-	TurnUserName    string
-	TurnPassword    string
+	Server    string
+	StunSever string //maybe empty
+	// TurnSever       string //maybe empty
+	// TurnUserName    string
+	// TurnPassword    string
 	ComponentNumber int //must be 1,right now
 }
 
@@ -85,9 +85,9 @@ func NewTransportConfigWithStun(stunServer string) *TransportConfig {
 //NewTransportConfigWithTurn return a turn config
 func NewTransportConfigWithTurn(turnServer, turnUser, turnPass string) *TransportConfig {
 	return &TransportConfig{
-		TurnSever:       turnServer,
-		TurnUserName:    turnUser,
-		TurnPassword:    turnPass,
+		// TurnSever:       turnServer,
+		// TurnUserName:    turnUser,
+		// TurnPassword:    turnPass,
 		ComponentNumber: 1,
 	}
 }
@@ -146,8 +146,6 @@ func NewIceStreamTransport(cfg *TransportConfig, name string) (it *StreamTranspo
 	}
 	if len(it.cfg.StunSever) > 0 {
 		it.transporter, err = newStunSocket(it.cfg.StunSever)
-	} else if len(it.cfg.TurnSever) > 0 {
-		it.transporter, err = newTurnSock(it.cfg.TurnSever, cfg.TurnUserName, cfg.TurnPassword)
 	} else {
 		it.transporter = new(HostOnlySock)
 	}
@@ -208,11 +206,6 @@ func (t *StreamTransport) StartNegotiation(remoteSDP string) (err error) {
 		return
 	}
 	t.log.Trace(fmt.Sprintf("checklist created\n%s", t.session.checkList))
-	err = t.session.createTurnPermissionIfNeeded()
-	if err != nil {
-		return
-	}
-	t.log.Trace(fmt.Sprintf("create permission success for all remote address"))
 
 	err = t.session.startCheck()
 	if err != nil {
@@ -245,7 +238,7 @@ func (t *StreamTransport) Stop() {
 		t.log.Error(fmt.Sprintf("%s has already stopped", t.Name))
 		return
 	}
-	t.State = TransportStateFailed
+	t.State = TransportStateStopped
 	if t.session != nil {
 		t.session.Stop()
 	}
@@ -291,6 +284,7 @@ func (t *StreamTransport) onRxData(data []byte, from string) {
 		t.cb.OnReceiveData(data, addrToUDPAddr(from))
 	}
 }
+
 func decodeSession(str string) (session *sessionDescription, err error) {
 	var s sdp.Session
 	s, err = sdp.DecodeSession([]byte(str), s)

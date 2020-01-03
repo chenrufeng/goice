@@ -171,7 +171,7 @@ var DefaultGatherer Gatherer = defaultGatherer{}
 /*
 返回所有可能的
 */
-const maxCandidates = 8 //candidate 列表中最多有多少个,太多了可能是攻击
+const maxCandidates = 50 //candidate 列表中最多有多少个,太多了可能是攻
 func getLocalCandidates(primaryAddress string) (candidates []*Candidate, err error) {
 	_, port, err := net.SplitHostPort(primaryAddress)
 	if err != nil {
