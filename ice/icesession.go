@@ -1216,6 +1216,7 @@ func (s *session) changeRole(newrole SessionRole) {
 	s.log.Trace(fmt.Sprintf("role changed from %s to %s", s.role, newrole))
 	s.role = newrole
 }
+
 func (s *session) sendResponse(localAddr, fromAddr string, req *stun.Message, code stun.ErrorCode) {
 	var (
 		err         error
