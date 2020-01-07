@@ -113,6 +113,9 @@ func (n *Nat) handIncomingData(t *TranMsg) {
 	// 是否为第一个消息， 先缓存
 	dat, ok := n.pairData[t.TransId]
 	if ok {
+		if dat.from == t.from {
+			return // 忽略重复
+		}
 		// 第二条信息处理返回
 		n.notifyBack(dat.TransId+"|"+dat.PubTransPath+"|"+t.PubTransPath, dat.ClientTranport, dat.from)
 		n.notifyBack(dat.TransId+"|"+dat.PubTransPath+"|"+t.PubTransPath, t.ClientTranport, t.from)
