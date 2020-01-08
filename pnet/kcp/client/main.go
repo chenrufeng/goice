@@ -2,42 +2,36 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"time"
+
+	"github.com/nkbai/goice/pnet/kcp"
 )
 
 func main() {
-	client()
+	listener, _ := kcp.NewListenPeer(nil, 10, 3)
+	d, _ := listener.DialWithOptions("127.0.0.1:14567")
+	handlClient(d)
 }
 
-func client() {
+// handlClient send back everything it received
+func handlClient(conn *kcp.PeerSession) {
+	buf := make([]byte, 4096)
+	for {
+		data := "AAAAAAAAA"
 
-	// wait for server to become ready
-	time.Sleep(time.Second)
-
-	// dial to the echo server
-	if sess, err := DialWithOptions("127.0.0.1:12346", 10, 3); err == nil {
-
-		for {
-			data := time.Now().String()
-			buf := make([]byte, len(data))
-			fmt.Println("addr:", sess.LocalAddr())
-			fmt.Println("sent:", data)
-			if _, err := sess.Write([]byte(data)); err == nil {
-				// read back the data
-				if _, err := io.ReadFull(sess, buf); err == nil {
-					fmt.Println("recv:", string(buf))
-				} else {
-					log.Fatal(err)
-				}
-			} else {
-				log.Fatal(err)
-				fmt.Println(err)
-			}
-			time.Sleep(time.Second)
+		n, err := conn.Write([]byte(data))
+		fmt.Println("Write:", conn.LocalAddr(), conn.RemoteAddr(), data)
+		if err != nil {
+			log.Println(err)
+			return
 		}
-	} else {
-		log.Fatal(err)
+		n, err = conn.Read(buf)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		fmt.Println("REad:", conn.LocalAddr(), conn.RemoteAddr(), buf[:n])
+		time.Sleep(1 * time.Second)
 	}
 }

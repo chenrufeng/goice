@@ -17,8 +17,8 @@ const (
 	IKCP_CMD_WINS    = 84 // cmd: window size (tell)
 	IKCP_ASK_SEND    = 1  // need to send IKCP_CMD_WASK
 	IKCP_ASK_TELL    = 2  // need to send IKCP_CMD_WINS
-	IKCP_WND_SND     = 32
-	IKCP_WND_RCV     = 32
+	IKCP_WND_SND     = 1024
+	IKCP_WND_RCV     = 1024
 	IKCP_MTU_DEF     = 1400
 	IKCP_ACK_FAST    = 3
 	IKCP_INTERVAL    = 100
@@ -116,6 +116,7 @@ type segment struct {
 }
 
 // encode a segment into buffer
+// KCP包头
 func (seg *segment) encode(ptr []byte) []byte {
 	ptr = ikcp_encode32u(ptr, seg.conv)
 	ptr = ikcp_encode8u(ptr, seg.cmd)
